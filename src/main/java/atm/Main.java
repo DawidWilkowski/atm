@@ -1,18 +1,10 @@
 package atm;
 
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Scanner;
 
 public class Main {
-
-
-
-	float balance = 1000;
 
 
 	public static void main(String[] args) throws SQLException, ClassNotFoundException {
@@ -22,23 +14,25 @@ public class Main {
 		Statement statement = 	connect.createStatement();
 		Scanner scannerObject = new Scanner(System.in);
 		String userName = scannerObject.nextLine();
-		String SQL = "SELECT * FROM account WHERE name =" + userName;
 
-		ResultSet resultSet = statement.executeQuery(SQL);
-		if(resultSet !=null){
-		System.out.println("Hello" + resultSet);
+		ResultSet resultSet = statement.executeQuery("SELECT * FROM account WHERE name = '" + userName + "'");
+
+		if(resultSet.next() == true){
+			System.out.println("Hello " + resultSet.getString("name"));
+			Main main = new Main();
+			main.initializePage();
+			while (true) {
+				main.inputFromUser(resultSet);
+			}
 		}
-		while (resultSet.next()) {
-			System.out.println(resultSet.getString("name") + " " + resultSet.getInt("amount"));
+		else {
+			throw new RuntimeException("There is no acccount named:" + userName );
 		}
+
 		
 
 		
-		Main main = new Main();
-		main.initializePage();
-		while (true) {
-			main.inputFromUser();
-		}
+
 
 	}
 
@@ -51,40 +45,63 @@ public class Main {
 		System.out.println("3 - Withdraw");
 	}
 
-	private void inputFromUser() {
+	private void inputFromUser(ResultSet resultSet) throws SQLException {
 		Scanner scannerObject = new Scanner(System.in);
 		int userInput = scannerObject.nextInt();
 		switch (userInput) {
 		case 1: {
+			Database database = new Database();
+			Connection connect = DriverManager.getConnection(database.getURL(), database.getUSERNAME(), database.getPASSWORD());
 			System.out.println("\f");
 			System.out.println("1 - Balance");
-			System.out.println("You have:" + balance + "zl \n");
+			Statement statement = connect.createStatement();
+			ResultSet rs = statement.executeQuery("SELECT * FROM account WHERE name = '" + resultSet.getString("name") + "'" );
+			rs.next();
+			System.out.println("You have:" + rs.getFloat("amount") + "zl \n");
 
 			initializePage();
 			break;
 		}
 		case 2: {
-			float depositAmount = 0;
-			System.out.println("Enter amount:");
-			float userDepositAmount = scannerObject.nextFloat();
-			balance = balance + userDepositAmount;
-			System.out.println("Successfully added " + userDepositAmount + "zl to Your account");
-			System.out.println("You have:" + balance + "zl \n");
+			Database database = new Database();
+			Connection connect = DriverManager.getConnection(database.getURL(), database.getUSERNAME(), database.getPASSWORD());
 
-			String SQLCREATE = "UPDATE account SET amount = ";
-			//Statement createStatement = connect.prepareStatement(SQLCREATE);
+			System.out.println("Enter amount:");
+			int userDepositAmount = scannerObject.nextInt();
+
+			Statement statement = connect.createStatement();
+			ResultSet result = statement.executeQuery("SELECT * FROM account WHERE name = '" + resultSet.getString("name") + "'" );
+			result.next();
+			int amountToAdd = result.getInt("amount") + userDepositAmount;
+			statement.executeUpdate("UPDATE account SET amount = " + amountToAdd );
+
+			ResultSet rs = statement.executeQuery("SELECT * FROM account WHERE name = '" + resultSet.getString("name") + "'" );
+			rs.next();
+			System.out.println("Successfully added " + userDepositAmount + "zl to Your account");
+			System.out.println("You have:" + rs.getInt("amount") + "zl \n");
 
 			initializePage();
 			break;
 		}
 		case 3: {
-			float withdrawalAmount = 0;
-			System.out.println("Enter amount:");
-			float userWithdrawalAmount = scannerObject.nextFloat();
-			if (userWithdrawalAmount <= balance) {
-				balance = balance - userWithdrawalAmount;
-				System.out.println("Balance after withdrawal: " + balance);
+			Database database = new Database();
+			Connection connect = DriverManager.getConnection(database.getURL(), database.getUSERNAME(), database.getPASSWORD());
 
+			System.out.println("Enter amount:");
+			Statement statement = connect.createStatement();
+			ResultSet result = statement.executeQuery("SELECT * FROM account WHERE name = '" + resultSet.getString("name") + "'" );
+			result.next();
+			int userWithdrawalAmount = scannerObject.nextInt();
+			if (userWithdrawalAmount <= result.getInt("amount")) {
+
+
+				int amountToSubstract = result.getInt("amount") - userWithdrawalAmount;
+				statement.executeUpdate("UPDATE account SET amount = " + amountToSubstract );
+
+
+				ResultSet rs = statement.executeQuery("SELECT * FROM account WHERE name = '" + resultSet.getString("name") + "'" );
+				rs.next();
+				System.out.println("Balance after withdrawal: " + rs.getInt("amount"));
 			} else {
 				System.out.println("Not enough funds");
 			}
