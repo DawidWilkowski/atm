@@ -1,137 +1,45 @@
 package atm;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
+import java.io.IOException;
 import java.sql.*;
-import java.util.Properties;
 import java.util.Scanner;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class Main {
 
-	Properties prop = new Properties();
-
-	public static void main(String[] args) throws SQLException, ClassNotFoundException {
-
-		Main main = new Main();
-		Statement statement = main.databaseConnect();
+	public static void main(String[] args)
+			throws SQLException, ClassNotFoundException, IOException, InterruptedException {
+		initializePage();
+		Logger logger = LogManager.getLogger(Main.class);
 		Scanner scannerObject = new Scanner(System.in);
-		System.out.println("Enter Login: ");
-		String login = scannerObject.nextLine();
-		System.out.println("Enter Password: ");
-		String password = scannerObject.nextLine();
+		int userInput = scannerObject.nextInt();
 
-		ResultSet resultSet = statement
-				.executeQuery("SELECT * FROM account WHERE login = '" + login + "' AND password = '" + password + "'");
-		if (resultSet.next() == true) {
-			System.out.println("Hello " + resultSet.getString("login"));
-			main.initializePage();
-			while (true) {
-				main.inputFromUser(resultSet);
-			}
-		} else {
-			throw new RuntimeException("Wrong username or password");
+		switch (userInput) {
+		case 1:
+			CurrencyExchange currencyExchange = new CurrencyExchange();
+			currencyExchange.currency();
+			break;
+		case 2:
+			AccountMenager accountMenager = new AccountMenager();
+			accountMenager.menageAccount();
+			break;
+
+		default:
+			logger.error("Please use proper input");
+			break;
 		}
-	}
-
-	private Statement databaseConnect() throws SQLException {
-		try (InputStream input = new FileInputStream("application.properties")) {
-			prop.load(input);
-			String URL = prop.getProperty("URL");
-			String USERNAME = prop.getProperty("USERNAME");
-			String PASSWORD = prop.getProperty("PASSWORD");
-
-			Connection connect = DriverManager.getConnection(stringFormat(URL), stringFormat(USERNAME),
-					stringFormat(PASSWORD));
-			Statement statement = connect.createStatement();
-			return statement;
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
-		return null;
 
 	}
 
-	private String stringFormat(String stringToFormat) {
-		return stringToFormat.substring(1, stringToFormat.length() - 1);
-	}
-
-	private void initializePage() {
+	private static void initializePage() {
 		System.out.println("International Bank of Poland");
 		System.out.println("How can we help You?");
-		System.out.println("1 - Balance");
-		System.out.println("2 - Deposit");
-		System.out.println("3 - Withdraw");
-	}
-
-	private void inputFromUser(ResultSet resultSet) throws SQLException {
-		Scanner scannerObject = new Scanner(System.in);
-		Statement statement = databaseConnect();
-		int userInput = scannerObject.nextInt();
-		switch (userInput) {
-		case 1: {
-
-			System.out.println("1 - Balance");
-			ResultSet rs = statement
-					.executeQuery("SELECT * FROM account WHERE login = '" + resultSet.getString("login") + "'");
-			rs.next();
-			System.out.println("You have:" + rs.getFloat("amount") + "zl \n");
-			initializePage();
-			break;
-		}
-		case 2: {
-			System.out.println("Enter amount:");
-			int userDepositAmount = scannerObject.nextInt();
-			ResultSet result = statement
-					.executeQuery("SELECT * FROM account WHERE login = '" + resultSet.getString("login") + "'");
-			result.next();
-			int amountToAdd = result.getInt("amount") + userDepositAmount;
-			statement.executeUpdate("UPDATE account SET amount = " + amountToAdd);
-			System.out.println("Successfully added " + userDepositAmount + "zl to Your account");
-			System.out.println("You have:" + amountToAdd + "zl \n");
-			initializePage();
-			break;
-		}
-		case 3: {
-			System.out.println("Enter amount:");
-			int userWithdrawalAmount = scannerObject.nextInt();
-			ResultSet result = statement
-					.executeQuery("SELECT * FROM account WHERE login = '" + resultSet.getString("login") + "'");
-			result.next();
-			if (userWithdrawalAmount <= result.getInt("amount")) {
-				int amountToSubstract = result.getInt("amount") - userWithdrawalAmount;
-				statement.executeUpdate("UPDATE account SET amount = " + amountToSubstract);
-				System.out.println("Balance after withdrawal: " + amountToSubstract);
-			} else {
-				System.out.println("Not enough funds");
-			}
-			initializePage();
-			break;
-		}
-		case 4: {
-
-//            	// Setting URL
-//            	String url_str = "https://v6.exchangerate-api.com/v6/YOUR-API-KEY/latest/USD";
-//
-//            	// Making Request
-//            	URL url = new URL(url_str);
-//            	HttpURLConnection request = (HttpURLConnection) url.openConnection();
-//            	request.connect();
-//
-//            	// Convert to JSON
-//            	JsonParser jp = new JsonParser();
-//            	JsonElement root = jp.parse(new InputStreamReader((InputStream) request.getContent()));
-//            	JsonObject jsonobj = root.getAsJsonObject();
-//
-//            	// Accessing object
-//            	String req_result = jsonobj.get("result").getAsString();
-		}
-		default:
-			throw new IllegalArgumentException("Unexpected value: " + userInput);
-		}
+		System.out.println("1 - Wymiana walut");
+		System.out.println("2 - Logowanie");
 
 	}
-
 }
