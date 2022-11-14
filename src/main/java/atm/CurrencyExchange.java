@@ -10,26 +10,56 @@ import java.util.Scanner;
 import org.json.JSONObject;
 
 public class CurrencyExchange {
-public void currency()
-{
-	System.out.println("Choose currency");
-	Scanner scannerObject = new Scanner(System.in);
-	int userInput = scannerObject.nextInt();
-	try {
-		HttpClient client = HttpClient.newHttpClient();
-		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://v6.exchangerate-api.com/v6/96e28daf4121ddb86cad4c65/latest/PLN")).build();
+public void currency() throws IOException, InterruptedException {
 
+	Scanner scannerObject = new Scanner(System.in);
+	String currency;
+	boolean properValue = false;
+	while (!properValue){
+		System.out.println("Choose currency:");
+		System.out.println("1 - EUR");
+		System.out.println("2 - USD");
+		System.out.println("3 - GBP");
+		int userInput = scannerObject.nextInt();
+		System.out.println("Choose amount:");
+		float userAmount = scannerObject.nextFloat();
+	switch (userInput){
+		case 1:
+			currency = "EUR";
+			properValue = true;
+			convertCurrency(currency, userAmount);
+			break;
+
+		case 2:
+			currency = "USD";
+			properValue = true;
+			convertCurrency(currency, userAmount);
+			break;
+		case 3:
+			currency = "GBP";
+			properValue = true;
+			convertCurrency(currency, userAmount);
+			break;
+		default:
+
+			break;
+	}
+	}
+
+}
+
+	private void convertCurrency(String currency,float userAmount) throws IOException, InterruptedException {
+		HttpClient client = HttpClient.newHttpClient();
+		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://v6.exchangerate-api.com/v6/96e28daf4121ddb86cad4c65/latest/"+currency)).build();
 		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 		JSONObject myObject = new JSONObject(response.body());
 		float toEuro = myObject.getJSONObject("conversion_rates").getFloat("EUR");
-		float toDolar = myObject.getJSONObject("conversion_rates").getFloat("USD");
+		float toDollar = myObject.getJSONObject("conversion_rates").getFloat("USD");
 		float toPound =myObject.getJSONObject("conversion_rates").getFloat("GBP");
-		System.out.println(toEuro);
-		System.out.println(toDolar);
-		System.out.println(toPound);
-	} catch (IOException | InterruptedException e) {
-		e.printStackTrace();
+		System.out.println("Euro: " + toEuro * userAmount);
+		System.out.println("Dollars: " + toDollar * userAmount);
+		System.out.println("Pounds: " + toPound * userAmount);
 	}
-	
+
 }
-}
+
