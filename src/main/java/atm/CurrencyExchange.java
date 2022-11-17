@@ -11,7 +11,6 @@ import org.json.JSONObject;
 
 public class CurrencyExchange {
 public void currency() throws IOException, InterruptedException {
-
 	Scanner scannerObject = new Scanner(System.in);
 	String currency;
 	boolean properValue = false;
@@ -41,7 +40,7 @@ public void currency() throws IOException, InterruptedException {
 			convertCurrency(currency, userAmount);
 			break;
 		default:
-
+			System.out.println("Unexpected value : " + userInput);
 			break;
 	}
 	}

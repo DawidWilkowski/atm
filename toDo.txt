@@ -1,5 +1,4 @@
 ToDo:
-kantor walut;
 obsługa Loggera;
 obsługa wyjątków;
 testy

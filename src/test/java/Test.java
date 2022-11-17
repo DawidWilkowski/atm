@@ -1,9 +1,8 @@
-//import org.junit.jupiter.api.Assertions;
+import atm.AccountManager;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Test {
-    /*@Test
-    public void testDatabaseConnection(){
-        Assertions.assertNotNull();
-    }
-*/
+    
 }
