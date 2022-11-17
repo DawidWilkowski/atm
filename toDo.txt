@@ -1,4 +1,0 @@
-ToDo:
-obsługa Loggera;
-obsługa wyjątków;
-testy
